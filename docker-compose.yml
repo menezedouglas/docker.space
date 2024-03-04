@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  app:
+    container_name: php74-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./../../../www/php/7.4:/var/www # Mapeia o diretório atual para o diretório de trabalho do contêiner
+    depends_on:
+      - mysql
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=laravel
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+
+  nginx:
+    container_name: php74-nginx
+    image: nginx:latest
+    ports:
+      - "8080:80" # Mapeia a porta 8080 do host para a porta 80 do contêiner
+    volumes:
+      - ./gifttycorp.conf:/etc/nginx/gifttycorp.conf
+      - ./../../../www/php/7.4:/var/www # Mapeia o diretório atual para o diretório de trabalho do contêiner
+    depends_on:
+      - app
+
+  mysql:
+    container_name: php74-mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    container_name: php74-phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8181:80" # Mapeia a porta 8181 do host para a porta 80 do contêiner
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+      - mysql
+      
+volumes:
+  mysql_data:
